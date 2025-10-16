@@ -1,5 +1,7 @@
 package ru.itmo.cryptography;
 
+import ru.itmo.cryptography.Caesar.CaesarCipher;
+
 public class Main {
     public static void main(String[] args) {
         String originalText = """ 

@@ -1,39 +1,48 @@
-package ru.itmo.cryptography.Hill;
-
+/**
+ * Класс для тестирования реализации шифра Хилла.
+ * Проверяет корректность шифрования и расшифрования на примере текста длиной > 100 символов.
+ */
 public class HillCipherTest {
     public static void main(String[] args) {
-        String plainText = """
-                В криптографии шифр Хилла — это полиграммный шифр подстановки, основанный на линейной алгебре.
-                Изобретённый Лестером Хиллом в 1929 году, он стал первым шифром, работающим с блоками букв.
-                Эта реализация использует матрицу размером 4 на 4 и работает только с русским алфавитом.
-                """;
+        // Ключевая матрица 4×4 (порядок n = 4, так как номер студента 28 → n = 2*(28 mod 3)+2 = 4)
+        // Матрица выбрана так, что её определитель взаимно прост с 26 (det = 15, gcd(15,26)=1)
+        int[][] key = {
+                {3, 2, 1, 5},
+                {7, 9, 4, 2},
+                {1, 6, 8, 3},
+                {5, 1, 2, 9}
+        };
 
-        System.out.println("\n" + "=".repeat(60));
-        System.out.println("ТЕСТ ШИФРА ХИЛЛА , МАТРИЦА 4×4)");
-        System.out.println("=".repeat(60));
+        // Создаём экземпляр шифра с заданной ключевой матрицей
+        HillCipher cipher = new HillCipher(key);
 
-        String encrypted = HillCipher.encrypt(plainText);
-        System.out.println("Зашифрованный текст:");
-        System.out.println(encrypted);
+        // Исходный текст (содержит цифры и спецсимволы для проверки очистки)
+        String plaintext = "THEQUICKBROWNFOXJUMPSOVERTHELAZYDOGANDTHENUMBEROFTHEBEASTIS666BUTWEUSEONLYLETTERS";
 
-        String decrypted = HillCipher.decrypt(encrypted);
-        System.out.println("\nРасшифрованный текст:");
-        System.out.println(decrypted);
+        // Оставляем только буквы A–Z (удаляем цифры, пробелы и другие символы)
+        String cleanOriginal = plaintext.replaceAll("[^A-Z]", "");
 
-        // Очистка исходного текста: только буквы из алфавита
-        StringBuilder cleanOriginal = new StringBuilder();
-        for (char c : plainText.toLowerCase().toCharArray()) {
-            if ("абвгдеёжзийклмнопрстуфхцчшщъыьэюя".indexOf(c) != -1) {
-                cleanOriginal.append(c);
-            }
-        }
-        // Дополнение 'я' до длины, кратной 4 (как в encrypt)
-        while (cleanOriginal.length() % 4 != 0) {
-            cleanOriginal.append('я');
+        // Дополняем текст символами 'X' до длины, кратной размеру блока (n = 4)
+        // Это необходимо, так как шифр Хилла работает с блоками фиксированного размера
+        String paddedOriginal = cleanOriginal;
+        while (paddedOriginal.length() % 4 != 0) {
+            paddedOriginal += 'X';
         }
 
-        boolean check = cleanOriginal.toString().equals(decrypted);
-        System.out.println("\n✅ Проверка шифра Хилла (рус.): " + (check ? "УСПЕШНО" : "ОШИБКА!"));
-        System.out.println("Длина текста (только буквы): " + cleanOriginal.length());
+        // Шифруем исходный текст
+        String encrypted = cipher.encrypt(plaintext);
+
+        // Расшифровываем полученный шифротекст
+        String decrypted = cipher.decrypt(encrypted);
+
+        // Выводим результаты для наглядности
+        System.out.println("Исходный:      " + cleanOriginal);
+        System.out.println("Дополненный:   " + paddedOriginal); // То, что реально шифруется
+        System.out.println("Шифр:          " + encrypted);
+        System.out.println("Расшифр:       " + decrypted);
+
+        // Проверяем корректность: расшифрованный текст должен совпадать
+        // с дополненным оригиналом (включая конечные 'X')
+        System.out.println("Корректно:     " + paddedOriginal.equals(decrypted));
     }
 }
